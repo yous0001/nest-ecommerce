@@ -6,14 +6,14 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from './../../../node_modules/@types/jsonwebtoken/index.d';
+import { JwtPayload } from 'jsonwebtoken';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
 @Injectable()
-export class GuardsGuard implements CanActivate {
+export class AuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private reflector: Reflector,
@@ -27,10 +27,11 @@ export class GuardsGuard implements CanActivate {
     if (isPublic) {
       return true;
     }
+
     const token: string = this.extractTokenFromHeader(request) || '';
 
     if (!token) {
-      throw new UnauthorizedException('Unauthorized');
+      throw new UnauthorizedException('invalid token');
     }
     try {
       const payload: JwtPayload = await this.jwtService.verifyAsync(token, {
@@ -41,9 +42,18 @@ export class GuardsGuard implements CanActivate {
         ROLES_KEY,
         [context.getHandler(), context.getClass()],
       );
-      if (allowedRoles.length > 0 && !allowedRoles.includes(payload.role)) {
-        throw new ForbiddenException('Forbidden');
+
+      const userRole = (payload as JwtPayload & { role?: string }).role;
+      if (allowedRoles?.length === 0) {
+        return true;
       }
+
+      if (userRole && !allowedRoles.includes(userRole)) {
+        throw new ForbiddenException(
+          'You are not authorized to access this resource',
+        );
+      }
+
       request['user'] = payload;
     } catch (error) {
       throw new UnauthorizedException(
