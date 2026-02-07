@@ -22,12 +22,14 @@ export class UserService {
       Number(process.env.BCRYPT_SALT_ROUNDS),
     );
 
-    createUserDto.password = hashedPassword;
-    if (!createUserDto.role) {
-      createUserDto.role = UserRole.USER;
-    }
+    const userObject = {
+      ...createUserDto,
+      password: hashedPassword,
+      role: createUserDto.role ?? UserRole.USER,
+      active: true,
+    };
 
-    const user = await this.userModel.create(createUserDto);
+    const user = await this.userModel.create(userObject);
     return {
       message: 'User created successfully',
       user,
@@ -54,7 +56,10 @@ export class UserService {
     }
 
     if (updateUserDto.password) {
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+      updateUserDto.password = await bcrypt.hash(
+        updateUserDto.password,
+        Number(process.env.BCRYPT_SALT_ROUNDS),
+      );
     }
 
     if (updateUserDto.email) {
@@ -86,5 +91,15 @@ export class UserService {
     return {
       message: 'User deleted successfully',
     };
+  }
+
+  async inactive(id: string) {
+    const isUserExists = await this.userModel.findById(id);
+    if (!isUserExists) {
+      throw new BadRequestException('User not found');
+    }
+    isUserExists.active = false;
+    await isUserExists.save();
+    return { message: 'User inactive successfully' };
   }
 }

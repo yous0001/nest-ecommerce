@@ -42,4 +42,9 @@ export class UserController {
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }
+
+  @Patch('inactive/:id')
+  inactive(@Param('id') id: string) {
+    return this.userService.inactive(id);
+  }
 }
