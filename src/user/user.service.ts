@@ -69,6 +69,7 @@ export class UserService {
     const updatedUser = await this.userModel.findByIdAndUpdate(
       id,
       updateUserDto,
+      { new: true },
     );
     return {
       message: 'User updated successfully',
@@ -82,6 +83,8 @@ export class UserService {
       throw new BadRequestException('User not found');
     }
     await isUserExists.deleteOne();
-    return { message: 'User deleted successfully' };
+    return {
+      message: 'User deleted successfully',
+    };
   }
 }
