@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { UserRole } from '../enums/user-role.enum';
 
 @Schema({ timestamps: true })
 export class User {
@@ -18,11 +19,12 @@ export class User {
     required: true,
     min: [3, 'Password must be at least 3 characters long'],
     max: [30, 'Password must be less than 30 characters long'],
+    select: false,
   })
   password: string;
 
-  @Prop({ type: String, enum: ['admin', 'user'], default: 'user' })
-  role: string;
+  @Prop({ type: String, enum: UserRole, default: UserRole.USER })
+  role: UserRole;
 
   @Prop({
     type: Boolean,
