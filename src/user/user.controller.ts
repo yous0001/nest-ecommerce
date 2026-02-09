@@ -10,18 +10,18 @@ export class UserController {
   @Get('me')
   me(@Req() req: Request) {
     const user = req['user'] as User;
-    return this.userService.me(user._id.toString());
+    return this.userService.me(user);
   }
 
   @Patch('me')
   updateMe(@Req() req: Request, @Body() updateUserDto: UpdateUserDto) {
     const user = req['user'] as User;
-    return this.userService.updateMe(user._id.toString(), updateUserDto);
+    return this.userService.updateMe(user, updateUserDto);
   }
 
   @Delete('me')
   deleteMe(@Req() req: Request) {
     const user = req['user'] as User;
-    return this.userService.deleteMe(user._id.toString());
+    return this.userService.deleteMe(user);
   }
 }

@@ -6,8 +6,6 @@ import { UserManagementModule } from './user-management/user-management.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './auth/auth.module';
-import { AuthGuard } from './auth/guards/auth.guard';
-import { APP_GUARD } from '@nestjs/core';
 import { PaginationModule } from './common/pagination/pagination.module';
 import { UserModule } from './user/user.module';
 
@@ -34,12 +32,6 @@ import { UserModule } from './user/user.module';
     UserModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}
