@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './schemas/user.schema';
@@ -65,7 +70,7 @@ export class UserService {
   async findOne(id: string) {
     const user = await this.userModel.findById(id).select('-__v');
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
     return user;
   }
@@ -73,7 +78,7 @@ export class UserService {
   async update(id: string, updateUserDto: UpdateUserDto) {
     const isUserExists = await this.userModel.findById(id);
     if (!isUserExists) {
-      throw new BadRequestException('User not found');
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
     if (updateUserDto.password) {
@@ -106,7 +111,7 @@ export class UserService {
   async remove(id: string) {
     const isUserExists = await this.userModel.findById(id);
     if (!isUserExists) {
-      throw new BadRequestException('User not found');
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
     await isUserExists.deleteOne();
     return {
@@ -117,7 +122,7 @@ export class UserService {
   async inactive(id: string) {
     const isUserExists = await this.userModel.findById(id);
     if (!isUserExists) {
-      throw new BadRequestException('User not found');
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
     isUserExists.active = false;
     await isUserExists.save();

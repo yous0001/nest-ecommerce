@@ -8,7 +8,7 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { UserService } from './user.service';
+import { UserService } from './user-management.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole } from './enums/user-role.enum';
@@ -16,8 +16,8 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { QueryUserDto } from './dto/query-user.dto';
 
 @Roles(UserRole.ADMIN)
-@Controller('v1/user')
-export class UserController {
+@Controller('v1/admin/users')
+export class UserManagementController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
