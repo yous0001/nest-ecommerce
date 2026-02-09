@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './auth/guards/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { PaginationModule } from './common/pagination/pagination.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { PaginationModule } from './common/pagination/pagination.module';
     UserManagementModule,
     AuthModule,
     PaginationModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [

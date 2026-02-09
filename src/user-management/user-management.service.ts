@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './schemas/user.schema';
+import { User } from '../user/schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
@@ -40,9 +40,12 @@ export class UserService {
     };
 
     const user = await this.userModel.create(userObject);
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: userPassword, ...userWithoutPassword } = user.toObject();
     return {
       message: 'User created successfully',
-      user,
+      user: userWithoutPassword,
     };
   }
 
