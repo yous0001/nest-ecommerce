@@ -19,6 +19,6 @@ export class UserService {
   }
 
   async deleteMe(user: User): Promise<void> {
-    await this.userModel.findByIdAndDelete(user._id);
+    await this.userModel.findByIdAndUpdate(user._id, { active: false });
   }
 }

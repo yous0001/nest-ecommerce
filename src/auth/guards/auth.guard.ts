@@ -51,6 +51,10 @@ export class AuthGuard implements CanActivate {
         throw new UnauthorizedException('User not found');
       }
 
+      if (!user.active) {
+        throw new UnauthorizedException('account is not active');
+      }
+
       const allowedRoles = this.reflector.getAllAndOverride<string[]>(
         ROLES_KEY,
         [context.getHandler(), context.getClass()],
