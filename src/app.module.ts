@@ -8,6 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './auth/guards/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { PaginationModule } from './common/pagination/pagination.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { APP_GUARD } from '@nestjs/core';
     }),
     UserModule,
     AuthModule,
+    PaginationModule,
   ],
   controllers: [AppController],
   providers: [

@@ -6,10 +6,15 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { UserRole } from './enums/user-role.enum';
+import { QueryUserDto } from './dto/query-user.dto';
+import { PaginationService } from 'src/common/pagination/pagination.service';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private paginationService: PaginationService,
+  ) {}
   async create(createUserDto: CreateUserDto) {
     const { email, password } = createUserDto;
     const isUserExists = await this.userModel.findOne({ email });
@@ -36,9 +41,25 @@ export class UserService {
     };
   }
 
-  //TODO: Add pagination
-  async findAll() {
-    return await this.userModel.find().select('-__v');
+  async findAll(query: QueryUserDto) {
+    const filter = this.paginationService.buildFilter(
+      query as Record<string, unknown>,
+    );
+    if (query.name) {
+      filter.name = { $regex: query.name, $options: 'i' };
+    }
+    if (query.email) {
+      filter.email = { $regex: query.email, $options: 'i' };
+    }
+
+    const paginationOptions =
+      this.paginationService.getPaginationOptions(query);
+    return this.paginationService.paginate(
+      this.userModel as any,
+      filter,
+      paginationOptions,
+      '-password -__v -verificationCode -verificationCodeExpiresAt',
+    );
   }
 
   async findOne(id: string) {
