@@ -8,6 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './auth/auth.module';
 import { PaginationModule } from './common/pagination/pagination.module';
 import { UserModule } from './user/user.module';
+import { MailModule } from './common/mail/mail.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { UserModule } from './user/user.module';
     AuthModule,
     PaginationModule,
     UserModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

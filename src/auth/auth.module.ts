@@ -5,10 +5,13 @@ import { AuthGuard } from './guards/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { MailModule } from '../common/mail/mail.module';
+import { AuthUtilsService } from './utils/auth-utils.service';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MailModule,
   ],
   providers: [
     {
@@ -16,7 +19,9 @@ import { AuthService } from './auth.service';
       useClass: AuthGuard,
     },
     AuthService,
+    AuthUtilsService,
   ],
   controllers: [AuthController],
+  exports: [AuthUtilsService],
 })
 export class AuthModule {}

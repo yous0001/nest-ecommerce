@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { IsPublic } from './decorators/public.decorator';
+import { ForgetPasswordDto } from './dto/forget-password.dto';
 
 @Controller('v1/auth')
 @IsPublic()
@@ -17,5 +18,10 @@ export class AuthController {
   @Post('register')
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
+  }
+
+  @Post('forget-password')
+  forgetPassword(@Body() forgetPasswordDto: ForgetPasswordDto) {
+    return this.authService.forgetPassword(forgetPasswordDto);
   }
 }

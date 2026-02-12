@@ -11,12 +11,15 @@ import { User } from 'src/user/schemas/user.schema';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { UserRole } from 'src/user-management/enums/user-role.enum';
+import { ForgetPasswordDto } from './dto/forget-password.dto';
+import { AuthUtilsService } from './utils/auth-utils.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     private jwtService: JwtService,
+    private authUtilsService: AuthUtilsService,
   ) {}
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
@@ -50,5 +53,27 @@ export class AuthService {
       role: UserRole.USER,
     });
     return { message: 'User created successfully', user };
+  }
+
+  async forgetPassword(forgetPasswordDto: ForgetPasswordDto) {
+    const { email } = forgetPasswordDto;
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    const verificationCode = this.authUtilsService.generateVerificationCode();
+    const verificationCodeExpiresAt =
+      this.authUtilsService.generateVerificationCodeExpiresAt();
+
+    await this.userModel.findByIdAndUpdate(user._id, {
+      verificationCode,
+      verificationCodeExpiresAt,
+    });
+
+    await this.authUtilsService.sendVerificationCodeToEmail(
+      email,
+      verificationCode,
+    );
+    return { message: 'Verification code sent to email' };
   }
 }
