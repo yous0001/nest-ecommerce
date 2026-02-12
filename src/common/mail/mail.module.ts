@@ -16,7 +16,7 @@ import { ConfigService } from '@nestjs/config';
           },
         },
         defaults: {
-          from: `"No Reply" <${process.env.EMAIL_USER}>`,
+          from: `"SOHAG STORE" <${process.env.EMAIL_USER}>`,
         },
       }),
       inject: [ConfigService],
