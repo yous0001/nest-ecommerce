@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MailService } from 'src/common/mail/mail.service';
 import { EmailTemplateService } from 'src/common/mail/utils/template.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthUtilsService {
@@ -28,6 +29,13 @@ export class AuthUtilsService {
       email,
       'Verification Code - Sohag Store',
       htmlContent,
+    );
+  }
+
+  async hashVerificationCode(verificationCode: string) {
+    return await bcrypt.hash(
+      verificationCode,
+      Number(process.env.BCRYPT_SALT_ROUNDS),
     );
   }
 }

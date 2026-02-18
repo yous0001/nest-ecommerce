@@ -13,7 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserRole } from 'src/user-management/enums/user-role.enum';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { AuthUtilsService } from './utils/auth-utils.service';
-import { ResetPasswordDto } from './dto/reset-password.dto';
+import { VerifyVerificationCodeDto } from './dto/verify-verification-code.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
@@ -66,10 +66,13 @@ export class AuthService {
     const verificationCode = this.authUtilsService.generateVerificationCode();
     const verificationCodeExpiresAt =
       this.authUtilsService.generateVerificationCodeExpiresAt();
+    const hashedVerificationCode =
+      await this.authUtilsService.hashVerificationCode(verificationCode);
 
     await this.userModel.findByIdAndUpdate(user._id, {
-      verificationCode,
+      verificationCode: hashedVerificationCode,
       verificationCodeExpiresAt,
+      resetPasswordOtpAttempts: 0,
     });
 
     await this.authUtilsService.sendVerificationCodeToEmail(
@@ -79,20 +82,64 @@ export class AuthService {
     return { message: 'Verification code sent to email' };
   }
 
-  async resetPassword(resetPasswordDto: ResetPasswordDto) {
-    const { email, verificationCode, password } = resetPasswordDto;
-    const user = await this.userModel.findOne({ email, verificationCode });
+  async verifyVerificationCode(
+    verifyVerificationCodeDto: VerifyVerificationCodeDto,
+  ) {
+    const { email, verificationCode } = verifyVerificationCodeDto;
+    const user = await this.userModel.findOne({ email });
     if (!user) {
       throw new BadRequestException('Invalid verification code');
     }
+
+    const isVerificationCodeValid = await bcrypt.compare(
+      verificationCode,
+      user.verificationCode,
+    );
+
+    if (!isVerificationCodeValid) {
+      await this.userModel.findByIdAndUpdate(user._id, {
+        passwordResetOtpAttempts: user.passwordResetOtpAttempts + 1,
+      });
+      throw new BadRequestException('Invalid verification code');
+    }
+
     if (user.verificationCodeExpiresAt < new Date()) {
+      await this.userModel.findByIdAndUpdate(user._id, {
+        passwordResetOtpAttempts: user.passwordResetOtpAttempts + 1,
+      });
       throw new BadRequestException('Verification code expired');
     }
+
+    if (user.passwordResetOtpAttempts >= 5) {
+      throw new BadRequestException(
+        'You have reached the maximum number of attempts. Please try again later.',
+      );
+    }
+
+    const token = await this.jwtService.signAsync(
+      { id: user._id },
+      { expiresIn: '1h', secret: process.env.JWT_RESET_PASSWORD_SECRET },
+    );
+    return { message: 'Verification code verified successfully', token };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const payload = await this.jwtService.verifyAsync<{ id?: string }>(token, {
+      secret: process.env.JWT_RESET_PASSWORD_SECRET,
+    });
+    if (!payload['id']) {
+      throw new BadRequestException('Invalid token');
+    }
+    const user = await this.userModel.findById(payload.id);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
     const hashedPassword = await bcrypt.hash(
-      password,
+      newPassword,
       Number(process.env.BCRYPT_SALT_ROUNDS),
     );
-    await this.userModel.findByIdAndUpdate(user._id, {
+
+    await this.userModel.findByIdAndUpdate(payload.id, {
       password: hashedPassword,
       verificationCode: null,
       verificationCodeExpiresAt: null,
