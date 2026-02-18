@@ -13,6 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserRole } from 'src/user-management/enums/user-role.enum';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { AuthUtilsService } from './utils/auth-utils.service';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -75,5 +76,26 @@ export class AuthService {
       verificationCode,
     );
     return { message: 'Verification code sent to email' };
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const { email, verificationCode, password } = resetPasswordDto;
+    const user = await this.userModel.findOne({ email, verificationCode });
+    if (!user) {
+      throw new BadRequestException('Invalid verification code');
+    }
+    if (user.verificationCodeExpiresAt < new Date()) {
+      throw new BadRequestException('Verification code expired');
+    }
+    const hashedPassword = await bcrypt.hash(
+      password,
+      Number(process.env.BCRYPT_SALT_ROUNDS),
+    );
+    await this.userModel.findByIdAndUpdate(user._id, {
+      password: hashedPassword,
+      verificationCode: null,
+      verificationCodeExpiresAt: null,
+    });
+    return { message: 'Password reset successfully' };
   }
 }
