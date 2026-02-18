@@ -66,7 +66,7 @@ export class UserService {
       this.userModel as any,
       filter,
       paginationOptions,
-      '-password -__v -verificationCode -verificationCodeExpiresAt',
+      '-password -__v',
     );
   }
 

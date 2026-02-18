@@ -34,22 +34,6 @@ export class User extends Document {
   active: boolean;
 
   @Prop({
-    type: String,
-  })
-  verificationCode: string;
-
-  @Prop({
-    type: Date,
-  })
-  verificationCodeExpiresAt: Date;
-
-  @Prop({
-    type: Number,
-    default: 0,
-  })
-  passwordResetOtpAttempts: number;
-
-  @Prop({
     type: Number,
     min: [12, 'Age must be at least 12'],
     max: [200, 'Age must be less than 200'],

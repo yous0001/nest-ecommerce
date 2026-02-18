@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../user/schemas/user.schema';
+import {
+  PasswordReset,
+  PasswordResetSchema,
+} from './schemas/password-reset.schema';
 import { AuthGuard } from './guards/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthController } from './auth.controller';
@@ -10,7 +14,10 @@ import { AuthUtilsService } from './utils/auth-utils.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: PasswordReset.name, schema: PasswordResetSchema },
+    ]),
     MailModule,
   ],
   providers: [
