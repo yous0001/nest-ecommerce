@@ -14,6 +14,7 @@ import { UserRole } from 'src/user-management/enums/user-role.enum';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { AuthUtilsService } from './utils/auth-utils.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -97,5 +98,25 @@ export class AuthService {
       verificationCodeExpiresAt: null,
     });
     return { message: 'Password reset successfully' };
+  }
+
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
+    const { oldPassword, newPassword } = changePasswordDto;
+    const user = await this.userModel.findById(userId).select('+password');
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isPasswordValid) {
+      throw new BadRequestException('Invalid old password');
+    }
+    const hashedPassword = await bcrypt.hash(
+      newPassword,
+      Number(process.env.BCRYPT_SALT_ROUNDS),
+    );
+    await this.userModel.findByIdAndUpdate(userId, {
+      password: hashedPassword,
+    });
+    return { message: 'Password changed successfully' };
   }
 }
